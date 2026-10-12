@@ -15,7 +15,7 @@ import streamlit as st
 from openpyxl.styles import Alignment, Font, PatternFill
 
 st.set_page_config(
-    page_title="Hospital Data Integration Studio",
+    page_title="Intelligent Data Contract Framework",
     page_icon="🏥",
     layout="wide",
     initial_sidebar_state="expanded",
