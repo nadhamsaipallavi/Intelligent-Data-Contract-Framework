@@ -1019,7 +1019,7 @@ with st.sidebar:
 <div class="side-brand">
   <div class="logo">🏥</div>
   <div>
-    <div class="title">Hospital Data<br>Integration Studio</div>
+    <div class="title">Intelligent Data<br>Contract Framework/div>
     <div class="sub">INTEGRATE · CLEAN · EXPORT</div>
   </div>
 </div>
