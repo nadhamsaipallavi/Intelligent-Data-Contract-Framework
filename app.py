@@ -780,7 +780,25 @@ def page_architecture():
             parts.append('<div class="arch-arrow">▼</div>')
     parts.append("</div>")
     st.markdown("".join(parts), unsafe_allow_html=True)
-    
+
+    st.subheader("Application structure")
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown("**Presentation (Streamlit UI)**")
+        st.markdown(
+            "- Sidebar navigation with six pages\n"
+            "- Pages: About Project, About Dataset, Architecture, Preprocessing, EDA, Execution\n"
+            "- Plotly charts, tables and download buttons"
+        )
+    with c2:
+        st.markdown("**State and data handling**")
+        st.markdown(
+            "- <code>st.session_state['hospital_result']</code> stores all pipeline results\n"
+            "- Execution page runs the pipeline; Preprocessing and EDA pages read its results\n"
+            "- Files are processed in memory and never saved to disk",
+            unsafe_allow_html=True,
+        )
+
     st.subheader("Design principles")
     st.dataframe(pd.DataFrame([
         {"Principle": "Traceability", "Meaning": "Every record keeps Source_Format and Source_Record_ID"},
@@ -1009,8 +1027,8 @@ PAGES = {
     "ℹ️  About Project": page_about_project,
     "📚  About Dataset": page_about_dataset,
     "🏗️  Architecture": page_architecture,
-    "🧹  Preprocessing": page_preprocessing,
     "🔎  EDA": page_eda,
+    "🧹  Preprocessing": page_preprocessing,
     "▶️  Execution": page_execution,
 }
 
@@ -1019,7 +1037,7 @@ with st.sidebar:
 <div class="side-brand">
   <div class="logo">🏥</div>
   <div>
-    <div class="title">Intelligent Data<br>Contract Framework</div>
+    <div class="title">Hospital Data<br>Integration Studio</div>
     <div class="sub">INTEGRATE · CLEAN · EXPORT</div>
   </div>
 </div>
