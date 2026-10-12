@@ -508,6 +508,16 @@ div[data-testid="stMetric"] {border: 1px solid rgba(128,128,128,.22); padding: 1
 .badge {display: inline-block; padding: .18rem .65rem; margin: .15rem .2rem .15rem 0; border-radius: 999px;
         background: rgba(23,107,135,.14); border: 1px solid rgba(23,107,135,.35); font-size: .85rem;}
 
+/* ---------- Architecture page ---------- */
+.arch-flow {display: flex; flex-direction: column; align-items: stretch; gap: 0; margin: 1rem 0 1.4rem 0;}
+.arch-layer {border: 1px solid rgba(128,128,128,.28); border-left: 6px solid #176b87; border-radius: 12px;
+             padding: .85rem 1.1rem;}
+.arch-layer .t {font-weight: 700; font-size: 1.02rem; margin-bottom: .2rem;}
+.arch-layer .d {font-size: .9rem; opacity: .85; line-height: 1.5;}
+.arch-layer .f {font-size: .78rem; opacity: .65; margin-top: .3rem; font-family: monospace;}
+.arch-arrow {text-align: center; font-size: 1.3rem; line-height: 1.5rem; color: #176b87;}
+.arch-chips {margin-top: .45rem;}
+
 /* ---------- Sidebar menu ---------- */
 section[data-testid="stSidebar"] {background: linear-gradient(180deg,#0b1f33 0%,#102a43 55%,#143d57 100%);}
 section[data-testid="stSidebar"] * {color: #e8f1f7;}
@@ -563,7 +573,7 @@ def require_result():
 
 
 # ---------------------------------------------------------------------
-# 1. ABOUT PROJECT
+# 1. ABOUT PROJECT (shorter version)
 # ---------------------------------------------------------------------
 def page_about_project():
     st.header("ℹ️ About the Project")
@@ -571,51 +581,40 @@ def page_about_project():
     st.markdown(f"""
 <div class="card">
 <h4>{PROJECT_TITLE}</h4>
-Hospital information is published by many different agencies, and each one tends to use its own file format,
-its own column names, its own units and its own level of quality. One agency may share a spreadsheet, another a
-JSON feed, a third an XML export, and a map service may only provide placemarks with coordinates. Before any
-meaningful analysis can happen, all of this has to be brought together into one consistent, trustworthy dataset.<br><br>
-This project is a single web application that <b>integrates</b> hospital records from <b>six file formats</b>
-(CSV, JSON, XML, HTML, KML and KMZ) into one common <b>15-field schema</b>. It then performs
-<b>Exploratory Data Analysis (EDA)</b> to expose real data-quality problems, applies a documented
-<b>preprocessing</b> pipeline to fix them, runs automated <b>validation</b> checks on the result, and finally
-<b>exports</b> analysis-ready data together with a complete, formatted audit report.
+Hospital data is published by different agencies, each with its own file format, column names and quality.
+This application <b>integrates</b> hospital records from <b>six formats</b> (CSV, JSON, XML, HTML, KML and KMZ)
+into one common <b>15-field schema</b>, explores data quality with <b>EDA</b>, cleans it with a documented
+<b>preprocessing</b> pipeline, <b>validates</b> the result and <b>exports</b> analysis-ready data with a full audit report.
 </div>
 """, unsafe_allow_html=True)
 
-    # ---------------- Problem & motivation ----------------
-    st.subheader("🧩 Problem statement and motivation")
+    st.subheader("🧩 Problem and motivation")
     p1, p2 = st.columns(2)
     with p1:
         st.markdown("**The problem**")
         st.markdown(
-            "- The same hospital attribute has different names in different files "
-            "(e.g. `Inspection_Score`, `rating`, `QualityScore` all mean the quality score)\n"
-            "- Formats range from flat tables to nested documents, web tables and geographic files\n"
-            "- Values are inconsistent: ZIP codes with stray decimals, phone numbers with symbols, "
-            "category labels written several ways, negative bed counts, impossible coordinates\n"
-            "- Some sources simply do not contain certain fields (for example KML only has a name and coordinates)\n"
-            "- Duplicates and spelling mistakes creep in when records are merged"
+            "- The same attribute has different names in different files\n"
+            "- Values are inconsistent: bad ZIP codes, phone formats, category labels\n"
+            "- Impossible values such as negative beds or invalid coordinates\n"
+            "- Some sources do not contain certain fields at all"
         )
     with p2:
         st.markdown("**Why it matters**")
         st.markdown(
-            "- Analysts spend most of their time cleaning data rather than analysing it\n"
-            "- Decisions about capacity, access and quality of care depend on correct beds, locations and scores\n"
-            "- Dirty data silently produces misleading charts, wrong averages and failed map plots\n"
-            "- A repeatable, documented pipeline is far more reliable than one-off manual fixes\n"
-            "- Every step must be transparent so the results can be trusted and reviewed"
+            "- Analysts spend most of their time cleaning data\n"
+            "- Capacity and quality decisions need correct numbers\n"
+            "- A repeatable pipeline is more reliable than manual fixes\n"
+            "- Every step is transparent and reviewable"
         )
 
-    # ---------------- Objectives ----------------
     st.subheader("🎯 Objectives")
     objectives = [
-        ("🔗", "Integrate", "Read six different file formats and combine them into one standard schema without losing the source of each record."),
-        ("🔍", "Profile", "Measure missing values, data types, duplicates and outliers so data-quality problems become visible."),
-        ("🧹", "Clean", "Standardize text, categories, numbers, ZIP codes and phone numbers using clearly documented rules."),
-        ("✅", "Validate", "Run automated PASS / FAIL checks after cleaning to prove the rules actually worked."),
-        ("📦", "Deliver", "Export cleaned data, a schema-mapping file and a complete multi-sheet Excel report."),
-        ("🔁", "Reproduce", "Make the whole process repeatable, so any new set of files can be processed with one click."),
+        ("🔗", "Integrate", "Combine six file formats into one standard schema."),
+        ("🔍", "Profile", "Expose missing values, types, duplicates and outliers."),
+        ("🧹", "Clean", "Standardize and fix data using documented rules."),
+        ("✅", "Validate", "Run automated PASS / FAIL checks after cleaning."),
+        ("📦", "Deliver", "Export cleaned data and a multi-sheet Excel report."),
+        ("🔁", "Reproduce", "Re-run the whole process on new files in one click."),
     ]
     for row_start in range(0, len(objectives), 3):
         cols = st.columns(3)
@@ -626,91 +625,23 @@ This project is a single web application that <b>integrates</b> hospital records
                     unsafe_allow_html=True,
                 )
 
-    # ---------------- Pipeline ----------------
-    st.subheader("⚙️ How the pipeline works")
-    stages = [
-        ("Parse", "Each file is read with a format-specific reader: tables for CSV, normalized records for JSON, "
-                  "repeated elements for XML, the first table for HTML, placemarks for KML, and the embedded KML for zipped KMZ files."),
-        ("Schema mapping", "Source columns are mapped to the 15 common fields using explicit mappings first, then normalized "
-                           "names and common aliases. Fields a source does not provide stay missing and are never invented."),
-        ("Combine", "All standardized records are stacked into one table, tagged with their source format and a record ID "
-                    "so every row can be traced back to its file."),
-        ("Explore (EDA)", "Missing values, data types, descriptive statistics, IQR outliers and category distributions "
-                          "are analysed on the combined data before cleaning, so real problems are visible."),
-        ("Preprocess", "Twelve documented rules trim text, normalize categories, convert numbers, nullify invalid values, "
-                       "validate ZIP and phone formats, fix spelling, remove duplicates and impute medians."),
-        ("Validate", "Seven automated checks confirm there are no negative beds, out-of-range scores or coordinates, "
-                     "duplicates, or badly formatted ZIP codes and phone numbers."),
-        ("Export", "Download the cleaned CSV, the schema mapping, the validation report, or one formatted Excel workbook "
-                   "containing every table produced by the pipeline."),
-    ]
-    for i, (title, text) in enumerate(stages, start=1):
-        st.markdown(
-            f'<div class="stage"><div class="num">{i}</div><div class="body"><b>{title}</b><span>{text}</span></div></div>',
-            unsafe_allow_html=True,
-        )
-
-    # ---------------- Features ----------------
     st.subheader("✨ Key features")
     f1, f2, f3 = st.columns(3)
     features = [
-        (f1, "📂 Multi-format ingestion", "CSV, JSON, XML, HTML, KML and KMZ in a single run. Use the bundled dataset or upload your own files."),
-        (f2, "🧭 Transparent mapping", "A full source-to-common field mapping table shows exactly which source column fed each field."),
-        (f3, "📊 Interactive EDA", "Plotly charts and summary tables for missing data, source distribution, outliers and hospital types."),
-        (f1, "🛡️ Safe cleaning", "Invalid values become missing instead of being guessed. Descriptive fields like phone and address are never fabricated."),
-        (f2, "🧾 Full audit trail", "A preprocessing log, imputation report and before/after comparison document every change made."),
-        (f3, "⬇️ One-click export", "Cleaned CSV, mapping CSV, validation CSV and a formatted multi-sheet Excel report."),
+        (f1, "📂 Multi-format ingestion", "Use the bundled dataset or upload your own files."),
+        (f2, "🧭 Transparent mapping", "Shows which source column fed each common field."),
+        (f3, "📊 Interactive EDA", "Plotly charts and tables for data-quality review."),
     ]
     for col, title, text in features:
         with col:
-            st.markdown(
-                f'<div class="feature-card"><h5>{title}</h5><p>{text}</p></div>',
-                unsafe_allow_html=True,
-            )
+            st.markdown(f'<div class="feature-card"><h5>{title}</h5><p>{text}</p></div>',
+                        unsafe_allow_html=True)
 
-    # ---------------- Challenges ----------------
-    st.subheader("🛠️ Data challenges handled")
-    st.dataframe(pd.DataFrame([
-        {"Challenge": "Different column names", "Example": "Inspection_Score / rating / QualityScore", "How it is handled": "Explicit mapping, then normalized-name and alias matching"},
-        {"Challenge": "Inconsistent categories", "Example": "“in county”, “In-County”", "How it is handled": "Label dictionaries convert variants to one standard value"},
-        {"Challenge": "Impossible values", "Example": "Negative beds, score of 140, latitude of 95", "How it is handled": "Range checks set invalid values to missing"},
-        {"Challenge": "Malformed identifiers", "Example": "ZIP “12345.0”, phone “(555) 123-4567”", "How it is handled": "Strip suffixes and symbols, keep only valid 5-digit / 10-digit values"},
-        {"Challenge": "Fields absent in a source", "Example": "KML has no address or bed count", "How it is handled": "Left as missing, reported in the mapping table"},
-        {"Challenge": "Duplicates and typos", "Example": "“National Institue”", "How it is handled": "Spelling correction and exact duplicate removal"},
-        {"Challenge": "Missing numeric data", "Example": "Blank Bed_Count or Quality_Score", "How it is handled": "Median imputation, with every filled value logged"},
-    ]), use_container_width=True, hide_index=True)
-
-    # ---------------- Outcomes ----------------
-    st.subheader("🏁 Expected outcomes")
-    o1, o2 = st.columns(2)
-    with o1:
-        st.markdown("**Deliverables**")
-        st.markdown(
-            "- One unified, schema-standardized hospital dataset\n"
-            "- A cleaned dataset ready for analysis, modelling or mapping\n"
-            "- A schema-mapping report and a validation report\n"
-            "- A multi-sheet Excel workbook documenting the entire process"
-        )
-    with o2:
-        st.markdown("**What the result enables**")
-        st.markdown(
-            "- Comparing hospitals across regions, types and sizes\n"
-            "- Plotting facilities on a map using validated coordinates\n"
-            "- Studying capacity (beds) and quality scores with reliable numbers\n"
-            "- Reusing the same pipeline on new files with no extra effort"
-        )
-
-    # ---------------- Tech ----------------
     st.subheader("🧰 Technologies used")
-    st.dataframe(pd.DataFrame([
-        {"Technology": "Python", "Purpose": "Core language for the whole pipeline"},
-        {"Technology": "Streamlit", "Purpose": "Interactive multi-page web application"},
-        {"Technology": "Pandas", "Purpose": "Parsing, merging, cleaning and profiling tabular data"},
-        {"Technology": "NumPy", "Purpose": "Numeric operations and missing-value handling"},
-        {"Technology": "Plotly", "Purpose": "Interactive charts for EDA and overview pages"},
-        {"Technology": "OpenPyXL", "Purpose": "Building the formatted Excel report"},
-        {"Technology": "lxml / html5lib", "Purpose": "Reading HTML tables and XML-based formats"},
-    ]), use_container_width=True, hide_index=True)
+    st.markdown("".join(
+        f'<span class="badge">{t}</span>'
+        for t in ["Python", "Streamlit", "Pandas", "NumPy", "Plotly", "OpenPyXL", "lxml / html5lib"]
+    ), unsafe_allow_html=True)
 
     st.markdown("**Supported input formats**")
     st.markdown("".join(f'<span class="badge">{fmt}</span>' for fmt, _ in SAMPLE_FILES), unsafe_allow_html=True)
@@ -792,7 +723,93 @@ def page_about_dataset():
 
 
 # ---------------------------------------------------------------------
-# 3. PREPROCESSING
+# 3. ARCHITECTURE (after About Dataset, before Preprocessing)
+# ---------------------------------------------------------------------
+def page_architecture():
+    st.header("🏗️ Architecture")
+    st.write("The application is a layered pipeline. Each layer takes the output of the previous one, "
+             "so every step stays separate, testable and traceable.")
+
+    layers = [
+        ("1 · Input layer",
+         "Bundled dataset files from the <code>data/</code> folder, or files uploaded by the user.",
+         "CSV · JSON · XML · HTML · KML · KMZ",
+         "sample_files(), st.file_uploader()"),
+        ("2 · Parsing layer",
+         "A format-specific reader turns each file into a raw table. Format is detected from the file extension.",
+         "",
+         "detect_format(), parse_upload(), parse_kml_bytes()"),
+        ("3 · Schema mapping layer",
+         "Source columns are mapped to the 15 common fields (explicit mapping → normalized names → aliases). "
+         "Missing fields stay empty. Each row is tagged with its source format and record ID.",
+         "",
+         "SCHEMA_MAPPING, ALIASES, standardize_schema()"),
+        ("4 · Integration layer",
+         "All standardized tables are stacked into one combined dataset.",
+         "",
+         "pd.concat(), source summary"),
+        ("5 · EDA layer",
+         "Profiles the combined data before cleaning: missing values, data types, statistics, IQR outliers, distributions.",
+         "",
+         "make_missing_report(), outlier analysis"),
+        ("6 · Preprocessing layer",
+         "Twelve cleaning rules: trim text, normalize categories, convert numbers, nullify invalid values, "
+         "validate ZIP and phone, fix spelling, remove duplicates, impute medians.",
+         "",
+         "preprocess_data()"),
+        ("7 · Validation layer",
+         "Seven automated PASS / FAIL checks confirm the cleaned data follows the rules.",
+         "",
+         "validation_report"),
+        ("8 · Output layer",
+         "Cleaned CSV, schema mapping CSV, validation CSV and one formatted multi-sheet Excel report.",
+         "",
+         "create_excel_report(), st.download_button()"),
+    ]
+    parts = ['<div class="arch-flow">']
+    for i, (title, desc, chips, funcs) in enumerate(layers):
+        chip_html = ""
+        if chips:
+            chip_html = '<div class="arch-chips">' + "".join(
+                f'<span class="badge">{c.strip()}</span>' for c in chips.split("·")) + "</div>"
+        parts.append(
+            f'<div class="arch-layer"><div class="t">{title}</div><div class="d">{desc}</div>'
+            f'{chip_html}<div class="f">{funcs}</div></div>'
+        )
+        if i < len(layers) - 1:
+            parts.append('<div class="arch-arrow">▼</div>')
+    parts.append("</div>")
+    st.markdown("".join(parts), unsafe_allow_html=True)
+
+    st.subheader("Application structure")
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown("**Presentation (Streamlit UI)**")
+        st.markdown(
+            "- Sidebar navigation with six pages\n"
+            "- Pages: About Project, About Dataset, Architecture, Preprocessing, EDA, Execution\n"
+            "- Plotly charts, tables and download buttons"
+        )
+    with c2:
+        st.markdown("**State and data handling**")
+        st.markdown(
+            "- <code>st.session_state['hospital_result']</code> stores all pipeline results\n"
+            "- Execution page runs the pipeline; Preprocessing and EDA pages read its results\n"
+            "- Files are processed in memory and never saved to disk",
+            unsafe_allow_html=True,
+        )
+
+    st.subheader("Design principles")
+    st.dataframe(pd.DataFrame([
+        {"Principle": "Traceability", "Meaning": "Every record keeps Source_Format and Source_Record_ID"},
+        {"Principle": "No invented data", "Meaning": "Missing descriptive fields stay missing; only numeric gaps use median imputation"},
+        {"Principle": "Fail-safe parsing", "Meaning": "A bad file is reported, and the remaining files are still processed"},
+        {"Principle": "Auditability", "Meaning": "Logs, before/after counts and validation results are exported"},
+    ]), use_container_width=True, hide_index=True)
+
+
+# ---------------------------------------------------------------------
+# 4. PREPROCESSING
 # ---------------------------------------------------------------------
 def page_preprocessing():
     st.header("🧹 Preprocessing")
@@ -845,7 +862,7 @@ def page_preprocessing():
 
 
 # ---------------------------------------------------------------------
-# 4. EDA
+# 5. EDA
 # ---------------------------------------------------------------------
 def page_eda():
     st.header("🔎 Exploratory Data Analysis (EDA)")
@@ -906,7 +923,7 @@ def page_eda():
 
 
 # ---------------------------------------------------------------------
-# 5. EXECUTION
+# 6. EXECUTION
 # ---------------------------------------------------------------------
 def page_execution():
     st.header("▶️ Execution")
@@ -1009,6 +1026,7 @@ def page_execution():
 PAGES = {
     "ℹ️  About Project": page_about_project,
     "📚  About Dataset": page_about_dataset,
+    "🏗️  Architecture": page_architecture,
     "🧹  Preprocessing": page_preprocessing,
     "🔎  EDA": page_eda,
     "▶️  Execution": page_execution,
