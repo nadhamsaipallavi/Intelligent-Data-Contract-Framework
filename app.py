@@ -548,7 +548,7 @@ section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checke
 .side-foot {font-size: .75rem; opacity: .6; margin-top: .8rem; line-height: 1.5;}
 </style>
 <div class="hero">
-<h1>🏥 Hospital Data Integration Studio</h1>
+<h1>🏥 Intelligent Data Contract Framework</h1>
 <p>Integrate heterogeneous hospital data, explore data quality, preprocess records, validate, and export.</p>
 </div>
 """, unsafe_allow_html=True)
