@@ -781,23 +781,7 @@ def page_architecture():
     parts.append("</div>")
     st.markdown("".join(parts), unsafe_allow_html=True)
 
-    st.subheader("Application structure")
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown("**Presentation (Streamlit UI)**")
-        st.markdown(
-            "- Sidebar navigation with six pages\n"
-            "- Pages: About Project, About Dataset, Architecture, Preprocessing, EDA, Execution\n"
-            "- Plotly charts, tables and download buttons"
-        )
-    with c2:
-        st.markdown("**State and data handling**")
-        st.markdown(
-            "- <code>st.session_state['hospital_result']</code> stores all pipeline results\n"
-            "- Execution page runs the pipeline; Preprocessing and EDA pages read its results\n"
-            "- Files are processed in memory and never saved to disk",
-            unsafe_allow_html=True,
-        )
+    
 
     st.subheader("Design principles")
     st.dataframe(pd.DataFrame([
