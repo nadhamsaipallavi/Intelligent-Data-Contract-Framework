@@ -663,7 +663,7 @@ def page_architecture():
                  caption="Left: detailed processing flow. Right: high-level layered architecture.")
         with open(ARCH_IMAGE, "rb") as f:
             st.download_button("⬇️ Download architecture diagram", f.read(),
-                               file_name="architecture.png", mime="image/png")
+                               file_name="architecture.jpg", mime="image/jpg")
     else:
         st.warning("Architecture image not found. Add it to your repository as `assets/architecture.png`.")
 
