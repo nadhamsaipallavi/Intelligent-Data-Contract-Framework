@@ -670,21 +670,7 @@ def page_architecture():
     st.subheader("Layer-by-layer description")
 
   
-    parts = ['<div class="arch-flow">']
-    for i, (title, desc, chips, funcs) in enumerate(layers):
-        chip_html = ""
-        if chips:
-            chip_html = '<div class="arch-chips">' + "".join(
-                f'<span class="badge">{c.strip()}</span>' for c in chips.split("·")) + "</div>"
-        parts.append(
-            f'<div class="arch-layer"><div class="t">{title}</div><div class="d">{desc}</div>'
-            f'{chip_html}<div class="f">{funcs}</div></div>'
-        )
-        if i < len(layers) - 1:
-            parts.append('<div class="arch-arrow">▼</div>')
-    parts.append("</div>")
-    st.markdown("".join(parts), unsafe_allow_html=True)
-
+   
     st.subheader("Design principles")
     st.dataframe(pd.DataFrame([
         {"Principle": "Traceability", "Meaning": "Every record keeps Source_Format and Source_Record_ID"},
