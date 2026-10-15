@@ -669,43 +669,7 @@ def page_architecture():
 
     st.subheader("Layer-by-layer description")
 
-    layers = [
-    
-        ("1 · Input layer",
-         "Bundled dataset files from the <code>data/</code> folder, or files uploaded by the user.",
-         "CSV · JSON · XML · HTML · KML · KMZ",
-         "sample_files(), st.file_uploader()"),
-        ("2 · Parsing layer",
-         "A format-specific reader turns each file into a raw table. Format is detected from the file extension.",
-         "",
-         "detect_format(), parse_upload(), parse_kml_bytes()"),
-        ("3 · Schema mapping layer",
-         "Source columns are mapped to the 15 common fields (explicit mapping → normalized names → aliases). "
-         "Missing fields stay empty. Each row is tagged with its source format and record ID.",
-         "",
-         "SCHEMA_MAPPING, ALIASES, standardize_schema()"),
-        ("4 · Integration layer",
-         "All standardized tables are stacked into one combined dataset.",
-         "",
-         "pd.concat(), source summary"),
-        ("5 · EDA layer",
-         "Profiles the combined data before cleaning: missing values, data types, statistics, IQR outliers, distributions.",
-         "",
-         "make_missing_report(), outlier analysis"),
-        ("6 · Preprocessing layer",
-         "Twelve cleaning rules: trim text, normalize categories, convert numbers, nullify invalid values, "
-         "validate ZIP and phone, fix spelling, remove duplicates, impute medians.",
-         "",
-         "preprocess_data()"),
-        ("7 · Validation layer",
-         "Seven automated PASS / FAIL checks confirm the cleaned data follows the rules.",
-         "",
-         "validation_report"),
-        ("8 · Output layer",
-         "Cleaned CSV, schema mapping CSV, validation CSV and one formatted multi-sheet Excel report.",
-         "",
-         "create_excel_report(), st.download_button()"),
-    ]
+  
     parts = ['<div class="arch-flow">']
     for i, (title, desc, chips, funcs) in enumerate(layers):
         chip_html = ""
