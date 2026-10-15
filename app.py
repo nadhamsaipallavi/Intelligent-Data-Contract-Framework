@@ -932,7 +932,7 @@ def render_notebook_eda(raw: pd.DataFrame):
     """Shows the notebook's EDA results on the EDA page."""
     e = build_eda_results(raw)
     st.divider()
-    st.subheader("📓 Detailed EDA results (from the notebook)")
+    st.subheader("📓 Detailed EDA results")
     st.caption("Calculated on the combined, schema-standardized data before cleaning, "
                "after treating tokens such as NA, N/A, NULL, None and Unknown as missing.")
 
