@@ -663,14 +663,10 @@ def page_architecture():
                  caption="Left: detailed processing flow. Right: high-level layered architecture.")
         with open(ARCH_IMAGE, "rb") as f:
             st.download_button("⬇️ Download architecture diagram", f.read(),
-                               file_name="architecture.jpg", mime="image/jpg")
+                               file_name="architecture.jpg", mime="image/jpeg")
     else:
         st.warning("Architecture image not found. Add it to your repository as `assets/architecture.jpg`.")
 
-  
-
-  
-   
     st.subheader("Design principles")
     st.dataframe(pd.DataFrame([
         {"Principle": "Traceability", "Meaning": "Every record keeps Source_Format and Source_Record_ID"},
@@ -811,7 +807,6 @@ def page_preprocessing():
 # ---------------------------------------------------------------------
 # 5. EDA
 # ---------------------------------------------------------------------
-# --- Notebook EDA (Colab) reproduced for the website -------------------
 MISSING_TOKENS = ["", " ", "NA", "N/A", "NULL", "null", "None", "NONE",
                   "UNKNOWN", "Unknown", "unknown"]
 
@@ -893,11 +888,9 @@ def build_eda_results(raw: pd.DataFrame) -> dict:
     return res
 
 
-def render_notebook_eda(raw: pd.DataFrame):
-    """Shows the notebook's EDA results on the EDA page."""
+def render_eda_results(raw: pd.DataFrame):
+    """Single, non-repeating EDA results view (each table / chart appears once)."""
     e = build_eda_results(raw)
-    st.divider()
-    st.subheader("📓 Detailed EDA results")
     st.caption("Calculated on the combined, schema-standardized data before cleaning, "
                "after treating tokens such as NA, N/A, NULL, None and Unknown as missing.")
 
@@ -920,8 +913,21 @@ def render_notebook_eda(raw: pd.DataFrame):
         with c2:
             st.markdown("**Unique values per column**")
             st.dataframe(e["unique"], use_container_width=True, hide_index=True)
+
         st.markdown("**Missing-value analysis (after missing-token standardization)**")
-        st.dataframe(e["missing"], use_container_width=True, hide_index=True)
+        m1, m2 = st.columns([1, 1.3])
+        with m1:
+            st.dataframe(e["missing"], use_container_width=True, hide_index=True)
+        with m2:
+            miss = e["missing"].query("Missing_Count > 0").sort_values("Missing_Count")
+            if miss.empty:
+                st.success("No missing values were detected in the standardized data.")
+            else:
+                st.plotly_chart(
+                    px.bar(miss, x="Missing_Count", y="Column", orientation="h",
+                           hover_data=["Missing_Percentage"], title="Missing values by column"),
+                    use_container_width=True)
+
         st.markdown("**Missing cells by source format**")
         d1, d2 = st.columns([1, 1.3])
         with d1:
@@ -941,9 +947,15 @@ def render_notebook_eda(raw: pd.DataFrame):
                 with col:
                     st.markdown(f"**{name}**")
                     st.dataframe(tbl, use_container_width=True, hide_index=True)
-        cc = e["categorical"]["County_Status"]
-        st.plotly_chart(px.bar(cc, x="County_Status", y="Count", text_auto=True,
-                               title="County status distribution"), use_container_width=True)
+        g1, g2 = st.columns(2)
+        with g1:
+            st.plotly_chart(px.bar(e["categorical"]["County_Status"], x="County_Status", y="Count",
+                                   text_auto=True, title="County status distribution"),
+                            use_container_width=True)
+        with g2:
+            st.plotly_chart(px.bar(e["categorical"]["Hospital_Type"], x="Hospital_Type", y="Count",
+                                   text_auto=True, title="Hospital type distribution"),
+                            use_container_width=True)
 
     with t3:
         st.markdown("**Descriptive statistics (numeric fields)**")
@@ -994,7 +1006,7 @@ def render_notebook_eda(raw: pd.DataFrame):
                                              title="Distribution of quality score"),
                                 use_container_width=True)
         src = e["categorical"]["Source_Format"]
-        st.plotly_chart(px.bar(src, x="Source_Format", y="Count", text_auto=True,
+        st.plotly_chart(px.pie(src, names="Source_Format", values="Count", hole=.45,
                                title="Records by source format"), use_container_width=True)
 
     with t6:
@@ -1013,13 +1025,14 @@ def page_eda():
         st.write("EDA is performed on the **combined, schema-standardized data before cleaning**, "
                  "so that real data-quality problems are visible.")
         st.dataframe(pd.DataFrame([
-            {"EDA step": "Missing-value analysis", "What it does": "Counts and percentage of missing cells per column", "Output": "Table + horizontal bar chart"},
-            {"EDA step": "Data-type review", "What it does": "Shows the data type of every column", "Output": "Table"},
+            {"EDA step": "Structure review", "What it does": "Data type and unique-value count of every column", "Output": "Tables"},
+            {"EDA step": "Missing-value analysis", "What it does": "Counts and percentage of missing cells per column and per source format", "Output": "Tables + bar charts"},
+            {"EDA step": "Category distribution", "What it does": "Frequency of County_Status, Hospital_Type, Record_Status and Source_Format", "Output": "Tables + bar charts"},
             {"EDA step": "Descriptive statistics", "What it does": "Count, mean, std, min, quartiles, max for numeric fields", "Output": "Summary table"},
-            {"EDA step": "Outlier detection (IQR)", "What it does": "Flags values outside Q1 − 1.5·IQR and Q3 + 1.5·IQR for Bed_Count and Quality_Score", "Output": "Outlier count and bounds"},
-            {"EDA step": "Source distribution", "What it does": "Number of records contributed by each file format", "Output": "Donut chart"},
-            {"EDA step": "Category distribution", "What it does": "Frequency of each Hospital_Type", "Output": "Bar chart"},
-            {"EDA step": "Per-file summary", "What it does": "Rows, columns and mapped fields per file", "Output": "Table + bar chart"},
+            {"EDA step": "Invalid-value check", "What it does": "Negative beds, quality scores outside 0–100, out-of-range coordinates", "Output": "Tables"},
+            {"EDA step": "Outlier detection (IQR)", "What it does": "Flags values outside Q1 − 1.5·IQR and Q3 + 1.5·IQR", "Output": "Outlier table + box plots"},
+            {"EDA step": "Distributions", "What it does": "Histograms of Bed_Count and Quality_Score; records by source format", "Output": "Histograms + donut chart"},
+            {"EDA step": "Issue log", "What it does": "Every problem found and the preprocessing action planned", "Output": "Table"},
         ]), use_container_width=True, hide_index=True)
         st.subheader("About the IQR outlier rule")
         st.markdown("A value is treated as an outlier if it is below **Q1 − 1.5 × IQR** or above **Q3 + 1.5 × IQR**, "
@@ -1029,45 +1042,11 @@ def page_eda():
         result = require_result()
         if not result:
             return
-        raw = result["raw"]
-        c1, c2 = st.columns(2)
-        with c1:
-            st.markdown("**Missing values by column**")
-            miss = result["missing"].query("Missing_Count > 0").sort_values("Missing_Count")
-            if miss.empty:
-                st.success("No missing values were detected in the standardized data.")
-            else:
-                fig = px.bar(miss, x="Missing_Count", y="Column", orientation="h",
-                             hover_data=["Missing_Percentage"], title="Missing values before preprocessing")
-                st.plotly_chart(fig, use_container_width=True)
-        with c2:
-            st.markdown("**Records by source format**")
-            by_format = raw.groupby("Source_Format", dropna=False).size().reset_index(name="Records")
-            st.plotly_chart(px.pie(by_format, names="Source_Format", values="Records", hole=.45),
-                            use_container_width=True)
-        st.markdown("**Missing-value report**")
-        st.dataframe(result["missing"], use_container_width=True, hide_index=True)
-        st.markdown("**Data types**")
-        st.dataframe(result["dtypes"], use_container_width=True, hide_index=True)
-        st.markdown("**Numeric summary**")
-        numeric = raw.select_dtypes(include=np.number)
-        if numeric.empty:
-            st.info("No numeric fields were detected before preprocessing. Numeric conversion is included in the cleaning step.")
-        else:
-            st.dataframe(numeric.describe().T, use_container_width=True)
-        st.markdown("**Outlier analysis (IQR rule)**")
-        st.dataframe(result["outliers"], use_container_width=True, hide_index=True)
-        if "Hospital_Type" in raw and raw["Hospital_Type"].notna().any():
-            category_counts = raw["Hospital_Type"].fillna("Missing").value_counts().rename_axis("Hospital_Type").reset_index(name="Count")
-            st.plotly_chart(px.bar(category_counts, x="Hospital_Type", y="Count", title="Hospital type distribution"),
-                            use_container_width=True)
-
-        # Notebook EDA results (shown after the pipeline has been run)
-        render_notebook_eda(raw)
+        render_eda_results(result["raw"])
 
 
 # ---------------------------------------------------------------------
-# 6. IMPLEMENTATION (previously "Execution")
+# 6. IMPLEMENTATION
 # ---------------------------------------------------------------------
 def page_implementation():
     st.header("▶️ Implementation")
