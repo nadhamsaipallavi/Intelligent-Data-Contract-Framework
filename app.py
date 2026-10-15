@@ -26,6 +26,8 @@ PROJECT_TITLE = "Hospital Multi-Format Data Integration, EDA and Preprocessing"
 # Dataset files that are shipped with the app (put them in a folder called "data"
 # next to this app.py file in your GitHub repo).
 DATA_DIR = Path(__file__).parent / "data"
+ASSETS_DIR = Path(__file__).parent / "assets"
+ARCH_IMAGE = ASSETS_DIR / "architecture.jpg"
 SAMPLE_FILES = [
     ("CSV", "hospital_source.csv"),
     ("JSON", "hospital_source.json"),
@@ -655,7 +657,20 @@ def page_architecture():
     st.write("The application is a layered pipeline. Each layer takes the output of the previous one, "
              "so every step stays separate, testable and traceable.")
 
+    st.subheader("System architecture diagram")
+    if ARCH_IMAGE.exists():
+        st.image(str(ARCH_IMAGE), use_container_width=True,
+                 caption="Left: detailed processing flow. Right: high-level layered architecture.")
+        with open(ARCH_IMAGE, "rb") as f:
+            st.download_button("⬇️ Download architecture diagram", f.read(),
+                               file_name="architecture.png", mime="image/png")
+    else:
+        st.warning("Architecture image not found. Add it to your repository as `assets/architecture.png`.")
+
+    st.subheader("Layer-by-layer description")
+
     layers = [
+    
         ("1 · Input layer",
          "Bundled dataset files from the <code>data/</code> folder, or files uploaded by the user.",
          "CSV · JSON · XML · HTML · KML · KMZ",
