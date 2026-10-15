@@ -567,7 +567,7 @@ section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checke
 def require_result():
     result = st.session_state.get("hospital_result")
     if not result:
-        st.info("No results yet. Open **▶️ Execution** in the sidebar, run the bundled dataset files "
+        st.info("No results yet. Open **▶️ Implementation** in the sidebar, run the bundled dataset files "
                 "(or upload your own) and the results will appear here.")
     return result
 
@@ -648,7 +648,75 @@ into one common <b>15-field schema</b>, explores data quality with <b>EDA</b>, c
 
 
 # ---------------------------------------------------------------------
-# 2. ABOUT DATASET
+# 2. ARCHITECTURE (now directly below About Project)
+# ---------------------------------------------------------------------
+def page_architecture():
+    st.header("🏗️ Architecture")
+    st.write("The application is a layered pipeline. Each layer takes the output of the previous one, "
+             "so every step stays separate, testable and traceable.")
+
+    layers = [
+        ("1 · Input layer",
+         "Bundled dataset files from the <code>data/</code> folder, or files uploaded by the user.",
+         "CSV · JSON · XML · HTML · KML · KMZ",
+         "sample_files(), st.file_uploader()"),
+        ("2 · Parsing layer",
+         "A format-specific reader turns each file into a raw table. Format is detected from the file extension.",
+         "",
+         "detect_format(), parse_upload(), parse_kml_bytes()"),
+        ("3 · Schema mapping layer",
+         "Source columns are mapped to the 15 common fields (explicit mapping → normalized names → aliases). "
+         "Missing fields stay empty. Each row is tagged with its source format and record ID.",
+         "",
+         "SCHEMA_MAPPING, ALIASES, standardize_schema()"),
+        ("4 · Integration layer",
+         "All standardized tables are stacked into one combined dataset.",
+         "",
+         "pd.concat(), source summary"),
+        ("5 · EDA layer",
+         "Profiles the combined data before cleaning: missing values, data types, statistics, IQR outliers, distributions.",
+         "",
+         "make_missing_report(), outlier analysis"),
+        ("6 · Preprocessing layer",
+         "Twelve cleaning rules: trim text, normalize categories, convert numbers, nullify invalid values, "
+         "validate ZIP and phone, fix spelling, remove duplicates, impute medians.",
+         "",
+         "preprocess_data()"),
+        ("7 · Validation layer",
+         "Seven automated PASS / FAIL checks confirm the cleaned data follows the rules.",
+         "",
+         "validation_report"),
+        ("8 · Output layer",
+         "Cleaned CSV, schema mapping CSV, validation CSV and one formatted multi-sheet Excel report.",
+         "",
+         "create_excel_report(), st.download_button()"),
+    ]
+    parts = ['<div class="arch-flow">']
+    for i, (title, desc, chips, funcs) in enumerate(layers):
+        chip_html = ""
+        if chips:
+            chip_html = '<div class="arch-chips">' + "".join(
+                f'<span class="badge">{c.strip()}</span>' for c in chips.split("·")) + "</div>"
+        parts.append(
+            f'<div class="arch-layer"><div class="t">{title}</div><div class="d">{desc}</div>'
+            f'{chip_html}<div class="f">{funcs}</div></div>'
+        )
+        if i < len(layers) - 1:
+            parts.append('<div class="arch-arrow">▼</div>')
+    parts.append("</div>")
+    st.markdown("".join(parts), unsafe_allow_html=True)
+
+    st.subheader("Design principles")
+    st.dataframe(pd.DataFrame([
+        {"Principle": "Traceability", "Meaning": "Every record keeps Source_Format and Source_Record_ID"},
+        {"Principle": "No invented data", "Meaning": "Missing descriptive fields stay missing; only numeric gaps use median imputation"},
+        {"Principle": "Fail-safe parsing", "Meaning": "A bad file is reported, and the remaining files are still processed"},
+        {"Principle": "Auditability", "Meaning": "Logs, before/after counts and validation results are exported"},
+    ]), use_container_width=True, hide_index=True)
+
+
+# ---------------------------------------------------------------------
+# 3. ABOUT DATASET
 # ---------------------------------------------------------------------
 def page_about_dataset():
     st.header("📚 About the Dataset")
@@ -723,81 +791,11 @@ def page_about_dataset():
 
 
 # ---------------------------------------------------------------------
-# 3. ARCHITECTURE (after About Dataset, before Preprocessing)
-# ---------------------------------------------------------------------
-def page_architecture():
-    st.header("🏗️ Architecture")
-    st.write("The application is a layered pipeline. Each layer takes the output of the previous one, "
-             "so every step stays separate, testable and traceable.")
-
-    layers = [
-        ("1 · Input layer",
-         "Bundled dataset files from the <code>data/</code> folder, or files uploaded by the user.",
-         "CSV · JSON · XML · HTML · KML · KMZ",
-         "sample_files(), st.file_uploader()"),
-        ("2 · Parsing layer",
-         "A format-specific reader turns each file into a raw table. Format is detected from the file extension.",
-         "",
-         "detect_format(), parse_upload(), parse_kml_bytes()"),
-        ("3 · Schema mapping layer",
-         "Source columns are mapped to the 15 common fields (explicit mapping → normalized names → aliases). "
-         "Missing fields stay empty. Each row is tagged with its source format and record ID.",
-         "",
-         "SCHEMA_MAPPING, ALIASES, standardize_schema()"),
-        ("4 · Integration layer",
-         "All standardized tables are stacked into one combined dataset.",
-         "",
-         "pd.concat(), source summary"),
-        ("5 · EDA layer",
-         "Profiles the combined data before cleaning: missing values, data types, statistics, IQR outliers, distributions.",
-         "",
-         "make_missing_report(), outlier analysis"),
-        ("6 · Preprocessing layer",
-         "Twelve cleaning rules: trim text, normalize categories, convert numbers, nullify invalid values, "
-         "validate ZIP and phone, fix spelling, remove duplicates, impute medians.",
-         "",
-         "preprocess_data()"),
-        ("7 · Validation layer",
-         "Seven automated PASS / FAIL checks confirm the cleaned data follows the rules.",
-         "",
-         "validation_report"),
-        ("8 · Output layer",
-         "Cleaned CSV, schema mapping CSV, validation CSV and one formatted multi-sheet Excel report.",
-         "",
-         "create_excel_report(), st.download_button()"),
-    ]
-    parts = ['<div class="arch-flow">']
-    for i, (title, desc, chips, funcs) in enumerate(layers):
-        chip_html = ""
-        if chips:
-            chip_html = '<div class="arch-chips">' + "".join(
-                f'<span class="badge">{c.strip()}</span>' for c in chips.split("·")) + "</div>"
-        parts.append(
-            f'<div class="arch-layer"><div class="t">{title}</div><div class="d">{desc}</div>'
-            f'{chip_html}<div class="f">{funcs}</div></div>'
-        )
-        if i < len(layers) - 1:
-            parts.append('<div class="arch-arrow">▼</div>')
-    parts.append("</div>")
-    st.markdown("".join(parts), unsafe_allow_html=True)
-
-    
-
-    st.subheader("Design principles")
-    st.dataframe(pd.DataFrame([
-        {"Principle": "Traceability", "Meaning": "Every record keeps Source_Format and Source_Record_ID"},
-        {"Principle": "No invented data", "Meaning": "Missing descriptive fields stay missing; only numeric gaps use median imputation"},
-        {"Principle": "Fail-safe parsing", "Meaning": "A bad file is reported, and the remaining files are still processed"},
-        {"Principle": "Auditability", "Meaning": "Logs, before/after counts and validation results are exported"},
-    ]), use_container_width=True, hide_index=True)
-
-
-# ---------------------------------------------------------------------
 # 4. PREPROCESSING
 # ---------------------------------------------------------------------
 def page_preprocessing():
     st.header("🧹 Preprocessing")
-    tab_rules, tab_results = st.tabs(["📖 Rules & method", "📊 Results (after execution)"])
+    tab_rules, tab_results = st.tabs(["📖 Rules & method", "📊 Results (after implementation)"])
 
     with tab_rules:
         st.write("Cleaning follows the rules of the source notebook. Descriptive fields such as phone numbers and "
@@ -848,9 +846,203 @@ def page_preprocessing():
 # ---------------------------------------------------------------------
 # 5. EDA
 # ---------------------------------------------------------------------
+# --- Notebook EDA (Colab) reproduced for the website -------------------
+MISSING_TOKENS = ["", " ", "NA", "N/A", "NULL", "null", "None", "NONE",
+                  "UNKNOWN", "Unknown", "unknown"]
+
+
+def build_eda_results(raw: pd.DataFrame) -> dict:
+    """Reproduces the EDA section of the Colab notebook on the combined, pre-cleaning data."""
+    eda = raw.copy()
+    for col in eda.columns:                       # Cell 20 - standardize missing tokens
+        if not pd.api.types.is_numeric_dtype(eda[col]):
+            eda[col] = eda[col].replace(MISSING_TOKENS, np.nan)
+    eda.insert(0, "Combined_Record_ID", range(1, len(eda) + 1))
+
+    res = {"rows": eda.shape[0], "columns": eda.shape[1]}
+    res["dtypes"] = pd.DataFrame({"Column": eda.columns, "Data_Type": eda.dtypes.astype(str).values})
+    missing = pd.DataFrame({"Column": eda.columns, "Missing_Count": eda.isnull().sum().values})
+    missing["Missing_Percentage"] = (missing["Missing_Count"] / max(len(eda), 1) * 100).round(2)
+    res["missing"] = missing.sort_values("Missing_Count", ascending=False)
+    res["missing_by_source"] = (
+        eda.isnull().sum(axis=1).groupby(eda["Source_Format"]).sum()
+        .reset_index(name="Total_Missing_Cells")
+    )
+    res["exact_duplicates"] = int(eda.duplicated().sum())
+    res["potential_duplicates"] = int(eda.duplicated(subset=["Hospital_Name", "Address", "City"]).sum())
+    res["unique"] = pd.DataFrame({
+        "Column": eda.columns,
+        "Unique_Values": [int(eda[c].nunique(dropna=True)) for c in eda.columns],
+    })
+    res["categorical"] = {
+        c: eda[c].fillna("NaN (missing)").astype(str).value_counts()
+            .rename_axis(c).reset_index(name="Count")
+        for c in ["County_Status", "Hospital_Type", "Record_Status", "Source_Format"]
+    }
+
+    numeric_cols = ["Longitude", "Latitude", "Data_Year", "Bed_Count", "Quality_Score"]
+    for c in numeric_cols:                        # Cell 28 - numeric conversion for EDA
+        eda[c] = pd.to_numeric(eda[c], errors="coerce")
+    res["numeric_summary"] = eda[numeric_cols].describe().T.reset_index().rename(columns={"index": "Column"})
+
+    res["invalid_beds"] = eda[eda["Bed_Count"] < 0]
+    res["invalid_quality"] = eda[(eda["Quality_Score"] < 0) | (eda["Quality_Score"] > 100)]
+    res["invalid_coords"] = eda[(eda["Longitude"] < -180) | (eda["Longitude"] > 180) |
+                                (eda["Latitude"] < -90) | (eda["Latitude"] > 90)]
+
+    iqr_rows = []
+    for c in ["Bed_Count", "Quality_Score", "Latitude", "Longitude"]:
+        s = eda[c].dropna()
+        if s.empty:
+            iqr_rows.append({"Column": c, "Q1": np.nan, "Q3": np.nan, "IQR": np.nan,
+                             "Lower_Limit": np.nan, "Upper_Limit": np.nan, "Outlier_Count": 0})
+            continue
+        q1, q3 = s.quantile(.25), s.quantile(.75)
+        iqr = q3 - q1
+        lo, hi = q1 - 1.5 * iqr, q3 + 1.5 * iqr
+        iqr_rows.append({"Column": c, "Q1": q1, "Q3": q3, "IQR": iqr, "Lower_Limit": lo,
+                         "Upper_Limit": hi, "Outlier_Count": int(((s < lo) | (s > hi)).sum())})
+    res["iqr"] = pd.DataFrame(iqr_rows)
+
+    issues = []
+    for _, r in res["missing"].iterrows():
+        if r["Missing_Count"] > 0:
+            issues.append({"Issue_Type": "Missing Values", "Column": r["Column"],
+                           "Count": int(r["Missing_Count"]), "Percentage": round(float(r["Missing_Percentage"]), 2),
+                           "Action_Required": "Handle during preprocessing"})
+    n = max(len(eda), 1)
+    for label, col, df_, action in [
+        ("Invalid Value", "Bed_Count", res["invalid_beds"], "Convert invalid negative values to NA"),
+        ("Invalid Value", "Quality_Score", res["invalid_quality"], "Convert values outside 0-100 to NA"),
+        ("Invalid Value", "Longitude / Latitude", res["invalid_coords"], "Convert out-of-range coordinates to NA"),
+    ]:
+        if len(df_) > 0:
+            issues.append({"Issue_Type": label, "Column": col, "Count": len(df_),
+                           "Percentage": round(len(df_) / n * 100, 2), "Action_Required": action})
+    if res["exact_duplicates"] > 0:
+        issues.append({"Issue_Type": "Duplicates", "Column": "Entire Record", "Count": res["exact_duplicates"],
+                       "Percentage": round(res["exact_duplicates"] / n * 100, 2),
+                       "Action_Required": "Remove exact duplicates"})
+    res["issue_log"] = pd.DataFrame(issues)
+    res["data"] = eda
+    return res
+
+
+def render_notebook_eda(raw: pd.DataFrame):
+    """Shows the notebook's EDA results on the EDA page."""
+    e = build_eda_results(raw)
+    st.divider()
+    st.subheader("📓 Detailed EDA results (from the notebook)")
+    st.caption("Calculated on the combined, schema-standardized data before cleaning, "
+               "after treating tokens such as NA, N/A, NULL, None and Unknown as missing.")
+
+    k1, k2, k3, k4 = st.columns(4)
+    k1.metric("Rows", f"{e['rows']:,}")
+    k2.metric("Columns", e["columns"])
+    k3.metric("Exact duplicate rows", e["exact_duplicates"])
+    k4.metric("Potential hospital duplicates", f"{e['potential_duplicates']:,}",
+              help="Rows repeating the same Hospital_Name + Address + City")
+
+    t1, t2, t3, t4, t5, t6 = st.tabs([
+        "🧾 Structure & missing", "🏷️ Categories", "🔢 Numeric & invalid values",
+        "🎯 Outliers", "📈 Distributions", "📝 EDA issue log"])
+
+    with t1:
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown("**Data types**")
+            st.dataframe(e["dtypes"], use_container_width=True, hide_index=True)
+        with c2:
+            st.markdown("**Unique values per column**")
+            st.dataframe(e["unique"], use_container_width=True, hide_index=True)
+        st.markdown("**Missing-value analysis (after missing-token standardization)**")
+        st.dataframe(e["missing"], use_container_width=True, hide_index=True)
+        st.markdown("**Missing cells by source format**")
+        d1, d2 = st.columns([1, 1.3])
+        with d1:
+            st.dataframe(e["missing_by_source"], use_container_width=True, hide_index=True)
+        with d2:
+            st.plotly_chart(px.bar(e["missing_by_source"], x="Source_Format", y="Total_Missing_Cells",
+                                   text_auto=True, title="Missing cells by source format"),
+                            use_container_width=True)
+
+    with t2:
+        st.write("Frequency of each value, including missing values, to reveal inconsistent labels "
+                 "(for example `in county`, `OUT COUNTY`, `General`, `Emergency`).")
+        cats = list(e["categorical"].items())
+        for i in range(0, len(cats), 2):
+            cols = st.columns(2)
+            for col, (name, tbl) in zip(cols, cats[i:i + 2]):
+                with col:
+                    st.markdown(f"**{name}**")
+                    st.dataframe(tbl, use_container_width=True, hide_index=True)
+        cc = e["categorical"]["County_Status"]
+        st.plotly_chart(px.bar(cc, x="County_Status", y="Count", text_auto=True,
+                               title="County status distribution"), use_container_width=True)
+
+    with t3:
+        st.markdown("**Descriptive statistics (numeric fields)**")
+        st.dataframe(e["numeric_summary"], use_container_width=True, hide_index=True)
+        for title, key, msg in [
+            ("Invalid bed count (negative)", "invalid_beds", "negative bed-count record(s)"),
+            ("Invalid quality score (outside 0–100)", "invalid_quality", "invalid quality-score record(s)"),
+            ("Invalid coordinates", "invalid_coords", "invalid coordinate record(s)"),
+        ]:
+            st.markdown(f"**{title}**")
+            tbl = e[key]
+            if tbl.empty:
+                st.success(f"0 {msg} found.")
+            else:
+                st.warning(f"{len(tbl)} {msg} found.")
+                st.dataframe(tbl, use_container_width=True, hide_index=True)
+
+    with t4:
+        st.markdown("**IQR outlier detection**")
+        st.dataframe(e["iqr"], use_container_width=True, hide_index=True)
+        st.markdown("**Box plots**")
+        data = e["data"]
+        cols_ = ["Bed_Count", "Quality_Score", "Latitude", "Longitude"]
+        for i in range(0, len(cols_), 2):
+            cc_ = st.columns(2)
+            for col, name in zip(cc_, cols_[i:i + 2]):
+                with col:
+                    s = data[name].dropna()
+                    if s.empty:
+                        st.info(f"No valid data to plot for {name}.")
+                    else:
+                        st.plotly_chart(px.box(s.to_frame(name), y=name, title=f"Outlier analysis - {name}"),
+                                        use_container_width=True)
+
+    with t5:
+        data = e["data"]
+        h1, h2 = st.columns(2)
+        with h1:
+            s = data["Bed_Count"].dropna()
+            if not s.empty:
+                st.plotly_chart(px.histogram(s.to_frame("Bed_Count"), x="Bed_Count", nbins=30,
+                                             title="Distribution of hospital bed count"),
+                                use_container_width=True)
+        with h2:
+            s = data["Quality_Score"].dropna()
+            if not s.empty:
+                st.plotly_chart(px.histogram(s.to_frame("Quality_Score"), x="Quality_Score", nbins=30,
+                                             title="Distribution of quality score"),
+                                use_container_width=True)
+        src = e["categorical"]["Source_Format"]
+        st.plotly_chart(px.bar(src, x="Source_Format", y="Count", text_auto=True,
+                               title="Records by source format"), use_container_width=True)
+
+    with t6:
+        st.write("Every problem found during EDA and the action that preprocessing will take.")
+        if e["issue_log"].empty:
+            st.success("No data-quality issues were logged.")
+        else:
+            st.dataframe(e["issue_log"], use_container_width=True, hide_index=True)
+
+
 def page_eda():
     st.header("🔎 Exploratory Data Analysis (EDA)")
-    tab_method, tab_results = st.tabs(["📖 EDA steps", "📊 Results (after execution)"])
+    tab_method, tab_results = st.tabs(["📖 EDA steps", "📊 Results (after implementation)"])
 
     with tab_method:
         st.write("EDA is performed on the **combined, schema-standardized data before cleaning**, "
@@ -905,12 +1097,15 @@ def page_eda():
             st.plotly_chart(px.bar(category_counts, x="Hospital_Type", y="Count", title="Hospital type distribution"),
                             use_container_width=True)
 
+        # Notebook EDA results (shown after the pipeline has been run)
+        render_notebook_eda(raw)
+
 
 # ---------------------------------------------------------------------
-# 6. EXECUTION
+# 6. IMPLEMENTATION (previously "Execution")
 # ---------------------------------------------------------------------
-def page_execution():
-    st.header("▶️ Execution")
+def page_implementation():
+    st.header("▶️ Implementation")
     st.write("Run the full pipeline: parse → map to common schema → combine → preprocess → validate → export. "
              "Files are processed in memory and are not saved to disk.")
 
@@ -1009,11 +1204,11 @@ def page_execution():
 # ---------------------------------------------------------------------
 PAGES = {
     "ℹ️  About Project": page_about_project,
-    "📚  About Dataset": page_about_dataset,
     "🏗️  Architecture": page_architecture,
+    "📚  About Dataset": page_about_dataset,
     "🔎  EDA": page_eda,
     "🧹  Preprocessing": page_preprocessing,
-    "▶️  Execution": page_execution,
+    "▶️  Implementation": page_implementation,
 }
 
 with st.sidebar:
@@ -1039,7 +1234,7 @@ with st.sidebar:
     else:
         st.markdown('<div class="status-pill"><span class="dot off"></span>'
                     '<span>Pipeline not run yet</span></div>', unsafe_allow_html=True)
-    st.markdown('<div class="side-foot">Tip: run <b>Execution</b> first to see live results in the '
+    st.markdown('<div class="side-foot">Tip: run <b>Implementation</b> first to see live results in the '
                 'Preprocessing and EDA pages.</div>', unsafe_allow_html=True)
 
 PAGES[choice]()
