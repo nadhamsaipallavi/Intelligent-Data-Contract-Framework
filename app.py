@@ -667,7 +667,7 @@ def page_architecture():
     else:
         st.warning("Architecture image not found. Add it to your repository as `assets/architecture.jpg`.")
 
-    st.subheader("Layer-by-layer description")
+  
 
   
    
